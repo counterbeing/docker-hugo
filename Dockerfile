@@ -1,5 +1,5 @@
 FROM alpine:latest
-MAINTAINER Johannes Mitlmeier <dev.jojomi@yahoo.com>
+MAINTAINER Cory Logan <he@corylogan.com>
 
 ENV HUGO_VERSION=0.17
 RUN apk add --update wget ca-certificates && \
