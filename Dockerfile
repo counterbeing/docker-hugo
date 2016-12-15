@@ -11,12 +11,9 @@ RUN apk add --update wget ca-certificates && \
   apk del wget ca-certificates && \
   rm /var/cache/apk/*
 
-COPY ./run.sh /run.sh
-
 VOLUME /src
-VOLUME /output
+VOLUME /public
 
 WORKDIR /src
-CMD ["/run.sh"]
 
-EXPOSE 1313
+# EXPOSE 1313

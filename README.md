@@ -1,83 +1,36 @@
 # docker-hugo
 
-Docker image for hugo static page generator (https://gohugo.io)
+Docker image for hugo static page generator (https://gohugo.io). This fork is based on [jojimi/docker-hugo](https://github.com/jojomi/docker-hugo). Except this is intended to be a sort of local wrapper for a system that might or might not already have `golang` installed.
 
-
-## Environment Variables
-
-* `HUGO_THEME`
-* `HUGO_WATCH` (set to any value to enable watching)
-* `HUGO_REFRESH_TIME` (in seconds, only applies if not watching, if not set, the container will build once and exit)
-* `HUGO_BASEURL`
-
-
-## Executing
-
-    docker run --name "my-hugo" -P -v $(pwd):/src jojomi/hugo
-
-Find your container:
-
-    docker ps | grep "my-hugo"
-    CONTAINER ID        IMAGE                           COMMAND                CREATED             STATUS              PORTS                   NAMES
-    ba00b5c238fc        jojomi/hugo:latest   "/run.sh"              7 seconds ago       Up 6 seconds        1313/tcp      my-hugo
-
+This is just for executing hugo as you normally would if you had it installed. But instead it's wrapped in docker to keep it running consistently between development systems.
 
 ## Building The Image Yourself (optional)
-
-    docker build -t jojomi/hugo:latest .
-
-The image is conveniently small at **about 20 MB** thanks to [alpine](http://gliderlabs.viewdocs.io/docker-alpine):
-
-    docker images | grep hugo
-    jojomi/hugo:0.15   latest              b2e7a8364baa        1 second ago      21.87 MB
-
+Run `make build`.
 
 ## Creating a new tag
-
-Create a new git branch, change the line `ENV HUGO_VERSION=0.15` in `Dockerfile` and wire it in the Docker Hub accordingly.
-
+Checkout a branch, and run `make release`.
 
 ## docker-compose
 
-Using this docker image together with nginx for serving static data.
+Use this in your project to get hugo running.
 
 `docker-compose.yml`
 
-```
+```yaml
 hugo:
-  image: jojomi/hugo:latest
+  image: counterbeing/hugo
   volumes:
-    - ./src/:/src
-    - ./output/:/output
-  environment:
-    - HUGO_REFRESH_TIME=3600
-    - HUGO_THEME=mytheme
-    - HUGO_BASEURL=mydomain.com
-  restart: always
-
-web:
-  image: jojomi/nginx-static
-  volumes:
-    - ./output:/var/www
-  environment:
-    - VIRTUAL_HOST=mydomain.com
+    - .:/src
+    - ./public/:/public
   ports:
-    - 80
+    - "1313:1313"
   restart: always
 ```
 
-`VIRTUAL_HOST` is set for use with jwilder's `nginx-proxy`:
+I'd also recommend a `.env` file with [autoenv](https://github.com/kennethreitz/autoenv) to use hugo transparently in your project.
 
-`docker-compose.yml`
+```bash
+alias hugo='docker-compose run --service-ports hugo hugo'
+```
 
-```
-proxy:
-  image: jwilder/nginx-proxy
-  ports:
-    - 80:80
-    - 443:443
-  volumes:
-    - /var/run/docker.sock:/tmp/docker.sock
-    - vhost.d:/etc/nginx/vhost.d:ro
-  restart: always
-```
+Service ports are necessary here with the run command, or you won't be able to get to it with docker's run command.
